@@ -52,8 +52,8 @@ public class Node {
     }
 
     public Integer getDistance(Node another){
-        return (int) Math.sqrt( Math.pow((this.x - this.y), 2) +
-                         Math.pow((another.getX() - another.getY()), 2) + 0.5);
+        return (int) (Math.sqrt( Math.pow((this.x - this.y), 2) +
+                         Math.pow((another.getX() - another.getY()), 2)) + 0.5);
     }
 
     @Override

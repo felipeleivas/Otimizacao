@@ -1,11 +1,13 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class FilePaser {
+public class FileParser {
     private String filePath;
     private String fileName;
     private Integer costLimit;
@@ -44,7 +46,7 @@ public class FilePaser {
         this.nodeHash = nodeHash;
     }
 
-    public FilePaser(String filePath) {
+    public FileParser(String filePath) {
         this.filePath = filePath;
         this.nodeHash = new HashMap<>();
         this.parseFile();
@@ -148,5 +150,19 @@ public class FilePaser {
             result += "\n" + aux.toString();
         }
         return result;
+    }
+
+    public List<Node> allNodes(){
+        List nodesList = new ArrayList<Node>();
+        Set<Long> keySet = this.nodeHash.keySet();
+
+        for(Long id: keySet){
+            nodesList.add(this.nodeHash.get(id));
+        }
+        return nodesList;
+    }
+
+    public Node getNode(Long id){
+        return this.nodeHash.get(id);
     }
 }
