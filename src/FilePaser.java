@@ -47,59 +47,10 @@ public class FilePaser {
     public FilePaser(String filePath) {
         this.filePath = filePath;
         this.nodeHash = new HashMap<>();
-        this.parseFile2();
+        this.parseFile();
     }
 
-    private void parseFile(){
-        try (Stream<String> stream = Files.lines(Paths.get(this.filePath))) {
-
-            stream.forEach((String s) -> {
-                if(s.startsWith("NAME :")){
-                    this.fileName = s.substring(6,s.length()).trim();
-
-                }
-                if(s.startsWith("COST_LIMIT : ")){
-                    this.costLimit = Integer.parseInt(s.substring("COST_LIMIT : ".length()).trim());
-                }
-                if(this.coordMng){
-                    String[] lineValues = s.split(" ");
-                    Long id = Long.parseLong(lineValues[0]);
-                    Integer x = Integer.parseInt(lineValues[1]);
-                    Integer y = Integer.parseInt(lineValues[2]);
-                    Node newNode = new Node(id, x, y);
-                    this.nodeHash.put(id, newNode);
-                }
-                if(this.nodeValueMng){
-                    System.out.println("Veio");
-                    String[] lineValues = s.split(" ");
-                    Long id = Long.parseLong(lineValues[0]);
-                    Integer value = Integer.parseInt(lineValues[1]);
-                    Node newNode = this.nodeHash.get(id);
-                    this.nodeHash.remove(id);
-                    newNode.setValue(value);
-                    this.nodeHash.put(id, newNode);
-                }
-                if(s.equals("NODE_COORD_SECTION")){
-                    this.coordMng = true;
-                    this.nodeValueMng = false;
-                }
-                if(s.equals("NODE_SCORE_SECTION")){
-                    this.coordMng = false;
-                    this.nodeValueMng = true;
-                }
-                if(s.equals("NODE_SCORE_SECTION")) {
-                    this.nodeValueMng = false;
-                    this.coordMng = false;
-                }
-
-            });
-
-
-        } catch (IOException e) {
-            System.out.println("DEU RUIM LENDO O ARQUIVO");
-        }
-    }
-    private void parseFile2() {
+    private void parseFile() {
         InputStream inputStream = null;
         StringBuilder resultStringBuilder = new StringBuilder();
         try {
