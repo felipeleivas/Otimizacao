@@ -124,11 +124,6 @@ public class FileParser {
                     this.nodeHash.put(id, node);
                     line = br.readLine();
                 }
-
-
-
-
-
             } catch (IOException e) {
                 System.out.println("ERRO LENDO O ARQUIVO");
                 System.exit(-1);
@@ -137,6 +132,60 @@ public class FileParser {
             System.out.println("ERRO LENDO O ARQUIVO");
         }
 
+    }
+
+/* EXEMPLO do que preciso :D
+set V := 1 2 3 4 5;
+param C := 25;
+param I := 1;
+param D :1   2    3    4    5:=
+    1   26   1    4    18   7
+    2   1    26   5    15   2
+    3   4    5    26   11   8
+    4   18   15   11   26   1
+    5   7    2    8    1    26;
+param P := 
+    1 10
+    2 1
+    3 5
+    4 20
+    5 3;
+end;
+*/
+    private void writeDataForGLPK() {
+        //o que tá comentado com um ~ é o q deve ser escrito no arquivo
+
+        //abre file pra escrever do tipo .dat
+
+        //~data;\n
+        //~set V := <índices dos vértices espaçados>;\n
+        //~param C := <COST_LIMIT>;\n
+        //~param I := <nó de origem>;\n
+
+        //os proximos não são tão simples, vou por um "código" e tu passa p java
+        //~param P := \n
+        for(int i=0; i < V.length; i++){
+            //~<indice do nodo i> <pontuação do nodo i>\n
+        }
+        //~;\n
+
+        //~param D : <índices dos vértices espaçados> :=\n
+        for(int i=0; i < V.length; i++){
+            //~<indice do nodo i> 
+                for(int j=0; i < V.length; j++){
+                    if (i == j) {
+                        //isso impede que o glpk use na solução as supostas existentes arestas em loop
+                        //~ <COST_LIMIT + 1>
+                    } else {
+                        //~ <distancia do nodo i para o nodo j>
+                    }
+                }
+            //~\n
+        }
+        //~;\n
+        //~end;
+
+        //tem ali em cima o exemplo de como ficaria com um grafo de 5 nodos
     }
 
 
