@@ -1,19 +1,25 @@
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class FileParser {
     private String filePath;
     private String fileName;
     private Integer costLimit;
+    private Long startNode;
     private HashMap<Long, Node> nodeHash = new HashMap<>();
-    private Boolean coordMng = false;
-    private Boolean nodeValueMng = false;
+    private List<Node> nodeList;
+
     public String getFilePath() {
         return filePath;
     }
@@ -50,28 +56,36 @@ public class FileParser {
         this.filePath = filePath;
         this.nodeHash = new HashMap<>();
         this.parseFile();
+        this.nodeList = this.allNodes();
     }
 
     private void parseFile() {
-        InputStream inputStream = null;
-        StringBuilder resultStringBuilder = new StringBuilder();
         try {
-            inputStream = new FileInputStream(this.filePath);
+            File file = new File(this.filePath);
+            FileInputStream inputStream = new FileInputStream(file);
 
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
-                if(br == null){
+
+                if(br == null) {
                     System.out.println("ERRO");
                 }
                 line = br.readLine();
-                while ( line != null && !line.startsWith("NAME :")) {
+                while ( line != null && !line.startsWith("NAME")) {
                     System.out.println(line);
                     line = br.readLine();
                 }
-                this.fileName = line.split(":")[1].trim();
 
-                while ( line != null && !line.startsWith("COST_LIMIT :")) {
+                if(line != null){
+                    this.fileName = line.split(":")[1].trim();
+                }
+                else{
+                    System.out.println("Erro na leitura");
+                    System.out.println(line);
+                }
+
+                while ( line != null && !line.startsWith("COST_LIMIT")) {
                     line = br.readLine();
                 }
                 try{
@@ -124,23 +138,153 @@ public class FileParser {
                     this.nodeHash.put(id, node);
                     line = br.readLine();
                 }
-
-
-
-
-
+                line = br.readLine();
+                try{
+                    this.startNode = Long.parseLong( line.trim());
+                }catch (Exception e){
+                    System.out.println("ERRO NO PARSING DO ARQUIVO, NÂO PODE CONVERTER UMA STRING EM NUMERO (Start Node");
+                    System.exit(-1);
+                }
             } catch (IOException e) {
-                System.out.println("ERRO LENDO O ARQUIVO");
+                System.out.println("ERRO LENDO O ARQUIVO 2");
                 System.exit(-1);
             }
         } catch (FileNotFoundException e) {
-            System.out.println("ERRO LENDO O ARQUIVO");
+            System.out.println("ERRO LENDO O ARQUIVO 1");
         }
 
     }
 
+    public Long getStartNode() {
+        return startNode;
+    }
 
-        @Override
+    public void setStartNode(Long startNode) {
+        this.startNode = startNode;
+    }
+
+    public List<Node> getNodeList() {
+        return nodeList;
+    }
+
+    public void setNodeList(List<Node> nodeList) {
+        this.nodeList = nodeList;
+    }
+
+    /* EXEMPLO do que preciso :D
+    set V := 1 2 3 4 5;
+    param C := 25;
+    param I := 1;
+    param D :1   2    3    4    5:=
+        1   26   1    4    18   7
+        2   1    26   5    15   2
+        3   4    5    26   11   8
+        4   18   15   11   26   1
+        5   7    2    8    1    26;
+    param P :=
+        1 10
+        2 1
+        3 5
+        4 20
+        5 3;
+    end;
+         */
+    public void writeDataForGLPK(String fileName) {
+        //o que tá comentado com um ~ é o q deve ser escrito no arquivo
+        List<Node> allNodes = this.allNodes();
+        //abre file pra escrever do tipo .dat
+        //FALTA ABRIR O ARQUIVO
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(fileName, "UTF-8");
+        } catch (Exception e) {
+            System.out.println("Erro na criação do arquivo GLPK");
+            System.exit(-1);
+        }
+        String content = new String();
+        //~data;\n
+        writer.print("data;\n");
+
+        //~set V := <índices dos vértices espaçados>;\n
+        writer.print("set V := ");
+        for(Node n: allNodes){
+            writer.print(n.getId().toString() + " ");
+        }
+        writer.print(";\n");
+
+        //~param C := <COST_LIMIT>;\n
+        System.out.println(this.costLimit.toString() );
+        writer.print("param C := " + this.costLimit.toString() + ";\n");
+        //~param I := <nó de origem>;\n
+        writer.print("param I := " + this.startNode.toString() + ";\n");
+        //os proximos não são tão simples, vou por um "código" e tu passa p java
+        //~param P := \n
+        writer.print("param P := \n");
+        //for(int i=0; i < V.length; i++){
+        //~<indice do nodo i> <pontuação do nodo i>\n
+        //}
+        Node lastNode = allNodes.get(allNodes.size() - 1);
+        for(Node n: allNodes){
+            if(n == lastNode ) {
+                writer.print(n.getId().toString() + " " + n.getValue().toString()+ ";\n");
+            }
+            else{
+                writer.print(n.getId().toString() + " " + n.getValue().toString()+ "\n");
+            }
+        }
+        //~;\n
+
+        //~param D : <índices dos vértices espaçados> :=\n
+        writer.print("param D :");
+        for(Node n: allNodes){
+            writer.print(n.getId().toString() + " ");
+        }
+        writer.print(" :=\n");
+
+        //for(int i=0; i < V.length; i++){
+        //    //~<indice do nodo i>
+        //        for(int j=0; i < V.length; j++){
+        //            if (i == j) {
+        //                //isso impede que o glpk use na solução as supostas existentes arestas em loop
+        //                //~ <COST_LIMIT + 1>
+        //            } else {
+        //               //~ <distancia do nodo i para o nodo j>
+        //           }
+        //       }
+        //    //~\n
+        //}
+        for(Node n: allNodes){
+            writer.print(n.getId().toString() + " ");
+            for(Node n2: allNodes){
+                if(n2.getId() == n.getId()){
+
+                    Integer max = costLimit + 1;
+                    writer.print(max.toString() +" ");
+                }
+                else{
+                    Integer dist = n.getDistance(n2);
+                    writer.print(dist.toString() + " ");
+                }
+            }
+            if(n == lastNode){
+                writer.print(";\n");
+            }
+            else{
+                writer.print("\n");
+            }
+        }
+        //~;\n
+
+        //~end;
+        writer.print("end;");
+        //System.out.println(content);
+        //writer.println(content);
+        writer.close();
+        //tem ali em cima o exemplo de como ficaria com um grafo de 5 nodos
+    }
+
+
+    @Override
     public String toString() {
         String result = "Name: " + this.fileName+ " Limite: " + this.costLimit + "Nodos: " ;
         Set<Long> idSet = this.nodeHash.keySet();
@@ -152,7 +296,7 @@ public class FileParser {
         return result;
     }
 
-    public List<Node> allNodes(){
+    private List<Node> allNodes(){
         List nodesList = new ArrayList<Node>();
         Set<Long> keySet = this.nodeHash.keySet();
 
