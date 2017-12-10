@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,8 +15,9 @@ public class FileParser {
     private String filePath;
     private String fileName;
     private Integer costLimit;
-    private Long startNode;
-    private HashMap<Long, Node> nodeHash = new HashMap<>();
+    private Integer startNode;
+    private Integer dimension;
+    private HashMap<Integer, Node> nodeHash = new HashMap<>();
     private List<Node> nodeList;
 
     public String getFilePath() {
@@ -44,11 +44,11 @@ public class FileParser {
         this.costLimit = costLimit;
     }
 
-    public HashMap<Long, Node> getNodeHash() {
+    public HashMap<Integer, Node> getNodeHash() {
         return nodeHash;
     }
 
-    public void setNodeHash(HashMap<Long, Node> nodeHash) {
+    public void setNodeHash(HashMap<Integer, Node> nodeHash) {
         this.nodeHash = nodeHash;
     }
 
@@ -57,6 +57,14 @@ public class FileParser {
         this.nodeHash = new HashMap<>();
         this.parseFile();
         this.nodeList = this.allNodes();
+    }
+
+    public Integer getDimension() {
+        return dimension;
+    }
+
+    public void setDimension(Integer dimension) {
+        this.dimension = dimension;
     }
 
     private void parseFile() {
@@ -80,9 +88,19 @@ public class FileParser {
                 if(line != null){
                     this.fileName = line.split(":")[1].trim();
                 }
+
                 else{
                     System.out.println("Erro na leitura");
                     System.out.println(line);
+                }
+                while ( line != null && !line.startsWith("DIMENSION")) {
+                    line = br.readLine();
+                }
+                try{
+                    this.dimension = Integer.parseInt(line.split(":")[1].trim());
+                }catch (Exception e){
+                    System.out.println("ERRO NO PARSING DO ARQUIVO, NÂO PODE CONVERTER UMA STRING EM NUMERO(DIMENSION)");
+                    System.exit(-1);
                 }
 
                 while ( line != null && !line.startsWith("COST_LIMIT")) {
@@ -102,11 +120,11 @@ public class FileParser {
                     String[] values;
                     values = line.split(" ");
                     Integer x = -1,y = -1;
-                    Long id= -1l;
+                    Integer id= -1;
                     try{
-                        id = Long.parseLong(values[0].trim());
-                        x = Integer.parseInt(values[1].trim());
-                        y = Integer.parseInt(values[2].trim());
+                        id = this.convertNumber(values[0].trim());
+                        x = this.convertNumber(values[1].trim());
+                        y = this.convertNumber(values[2].trim());
                     }catch (Exception e){
                         System.out.println("ERRO NO PARSING DO ARQUIVO, NÂO PODE CONVERTER UMA STRING EM NUMERO (NODE CORD");
                         System.exit(-1);
@@ -120,10 +138,10 @@ public class FileParser {
                     String[] values;
                     values = line.split(" ");
                     Integer value = -1;
-                    Long id= -1l;
+                    Integer id= -1;
                     try{
-                        id = Long.parseLong(values[0].trim());
-                        value = Integer.parseInt(values[1].trim());
+                        id =this.convertNumber(values[0].trim());
+                        value = this.convertNumber(values[1].trim());
                     }catch (Exception e){
                         System.out.println("ERRO NO PARSING DO ARQUIVO, NÂO PODE CONVERTER UMA STRING EM NUMERO (NODE VALUE");
                         System.exit(-1);
@@ -140,7 +158,7 @@ public class FileParser {
                 }
                 line = br.readLine();
                 try{
-                    this.startNode = Long.parseLong( line.trim());
+                    this.startNode = this.convertNumber( line.trim());
                 }catch (Exception e){
                     System.out.println("ERRO NO PARSING DO ARQUIVO, NÂO PODE CONVERTER UMA STRING EM NUMERO (Start Node");
                     System.exit(-1);
@@ -155,11 +173,11 @@ public class FileParser {
 
     }
 
-    public Long getStartNode() {
+    public Integer getStartNode() {
         return startNode;
     }
 
-    public void setStartNode(Long startNode) {
+    public void setStartNode(Integer startNode) {
         this.startNode = startNode;
     }
 
@@ -287,9 +305,9 @@ public class FileParser {
     @Override
     public String toString() {
         String result = "Name: " + this.fileName+ " Limite: " + this.costLimit + "Nodos: " ;
-        Set<Long> idSet = this.nodeHash.keySet();
+        Set<Integer> idSet = this.nodeHash.keySet();
         Node aux = null;
-        for(Long id: idSet){
+        for(Integer id: idSet){
             aux  = this.nodeHash.get(id);
             result += "\n" + aux.toString();
         }
@@ -298,15 +316,20 @@ public class FileParser {
 
     private List<Node> allNodes(){
         List nodesList = new ArrayList<Node>();
-        Set<Long> keySet = this.nodeHash.keySet();
+        Set<Integer> keySet = this.nodeHash.keySet();
 
-        for(Long id: keySet){
+        for(Integer id: keySet){
             nodesList.add(this.nodeHash.get(id));
         }
         return nodesList;
     }
 
-    public Node getNode(Long id){
+    public Node getNode(Integer id){
         return this.nodeHash.get(id);
+    }
+    
+    public Integer convertNumber(String str){
+        str = str.split("\\.")[0];
+        return Integer.parseInt(str);
     }
 }

@@ -1,6 +1,6 @@
 
 public class Node {
-    private Long id;
+    private Integer id;
     private Integer x;
     private Integer y;
     private Integer value;
@@ -13,18 +13,18 @@ public class Node {
         this.x = x;
     }
 
-    public Node(Long id, Integer x, Integer y) {
+    public Node(Integer id, Integer x, Integer y) {
         this.id = id;
         this.x = x;
         this.y = y;
     }
 
-    public Long getId() {
+    public Integer getId() {
 
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -37,7 +37,7 @@ public class Node {
         this.value = value;
     }
 
-    public Node(Long id, Integer x, Integer y , Integer value){
+    public Node(Integer id, Integer x, Integer y , Integer value){
         this.x = x;
         this.y = y;
         this.id = id;
